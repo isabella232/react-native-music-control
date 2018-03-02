@@ -169,14 +169,6 @@ RCT_EXPORT_METHOD(observeAudioInterruptions:(BOOL) observe){
     self.audioInterruptionsObserved = observe;
 }
 
-RCT_EXPORT_METHOD(setVolume:(float)val type:(NSString *)type){
-    [[MPMusicPlayerController applicationMusicPlayer] setVolume:val];
-}
-
-RCT_EXPORT_METHOD(getVolume:(NSString *)type resolve:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject){
-    resolve([NSNumber numberWithDouble:[MPMusicPlayerController applicationMusicPlayer].volume]);
-}
-
 #pragma mark internal
 
 - (NSDictionary *) update:(NSMutableDictionary *) mediaDict with:(NSDictionary *) details andSetDefaults:(BOOL) setDefault {
@@ -207,7 +199,6 @@ RCT_EXPORT_METHOD(getVolume:(NSString *)type resolve:(RCTPromiseResolveBlock)res
 - (id)init {
     self = [super init];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioHardwareRouteChanged:) name:AVAudioSessionRouteChangeNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioVolumeChanged:) name:@"AVSystemController_SystemVolumeDidChangeNotification" object:nil];
     self.audioInterruptionsObserved = false;
 
     return self;
@@ -221,7 +212,6 @@ RCT_EXPORT_METHOD(getVolume:(NSString *)type resolve:(RCTPromiseResolveBlock)res
 - (void)dealloc {
     [self stop];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionRouteChangeNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"AVSystemController_SystemVolumeDidChangeNotification" object:nil];
 }
 
 - (void)stop {
@@ -360,15 +350,6 @@ RCT_EXPORT_METHOD(getVolume:(NSString *)type resolve:(RCTPromiseResolveBlock)res
            interruptionOption == AVAudioSessionInterruptionOptionShouldResume) {
         [self sendEvent:@"play"];
     }
-}
-
-- (void)audioVolumeChanged:(NSNotification *)notification
-{
-    float volume = [[[notification userInfo] objectForKey:@"AVSystemController_AudioVolumeNotificationParameter"] floatValue];
-    
-    // [self sendEventWithValue:@"changeAudioVolume" withValue:[NSNumber numberWithFloat:volume]];
-    NSLog(@"Burt profile belongs to segments: %@", volume);
-    // [self sendEventWithName:@"RNMusicControlEvent" body:@{@"name": @"changeAudioVolume", @"value":[NSNumber numberWithFloat:volume]}];
 }
 
 @end
